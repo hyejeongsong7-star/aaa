@@ -3,822 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenSpace — Focus, Breathe, and Achieve</title>
-    <!-- Tailwind CSS for modern responsive layout -->
+    <title>스마트 가상 증상 분석 & 병원 추천 비서</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for beautiful icons -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & Playfair Display for sophisticated typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif'],
-                    },
-                    colors: {
-                        zen: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            800: '#1e1b4b',
-                            900: '#0f0e26',
-                            accent: '#818cf8',
-                            emerald: '#34d399',
-                            rose: '#fb7185',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        /* Custom scrollbar styling for seamless design */
-        ::-webkit-scrollbar {
-            width: 6px;
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 14, 38, 0.5);
+        .step-transition {
+            transition: all 0.25s ease-in-out;
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(129, 140, 248, 0.3);
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(129, 140, 248, 0.6);
-        }
-        /* Custom glassmorphism and glow effects */
-        .glass-panel {
-            background: rgba(30, 27, 75, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .glow-accent {
-            box-shadow: 0 0 20px rgba(129, 140, 248, 0.25);
-        }
-        /* Pulse animations for timer */
-        @keyframes gentle-pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.85; transform: scale(0.98); }
-        }
-        .timer-pulse {
-            animation: gentle-pulse 3s infinite ease-in-out;
+        @media print {
+            body { background-color: white; }
+            .no-print { display: none !important; }
+            .print-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
         }
     </style>
 </head>
-<body class="bg-zen-900 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white overflow-x-hidden relative">
+<body class="min-h-screen flex flex-col justify-between text-gray-800">
 
-    <!-- Glowing Background blobs for atmosphere -->
-    <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-900/20 blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-900/10 blur-[120px] pointer-events-none"></div>
-
-    <!-- Main Header -->
-    <header class="w-full max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center border-b border-white/5 gap-4 z-10">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30">
-                Z
+    <!-- 헤더 영역 -->
+    <header class="bg-white border-b border-gray-100 py-4 px-6 sticky top-0 z-50 shadow-sm no-print">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-heart-pulse text-xl"></i>
+                </div>
+                <span class="text-xl font-black text-gray-950 tracking-tight">MediGuide AI</span>
             </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-200 to-purple-300 bg-clip-text text-transparent">ZenSpace</h1>
-                <p class="text-xs text-indigo-300/60 font-medium tracking-wide">MIND FULL TO MINDFUL</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-6">
-            <div id="live-clock" class="text-sm font-semibold text-indigo-200/80 bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                00:00:00 PM
-            </div>
-            <a href="https://github.com" target="_blank" class="text-slate-400 hover:text-white transition-colors">
-                <i class="fab fa-github text-xl"></i>
-            </a>
+            <span class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-full border border-blue-100">가상 분석 시스템</span>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
-    <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 z-10">
-        
-        <!-- Left Side: Focus Timer & Audio Generator (4 Columns) -->
-        <section class="lg:col-span-5 flex flex-col gap-6">
+    <!-- 메인 콘텐츠 영역 -->
+    <main class="flex-grow flex items-center justify-center px-4 py-8">
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden print-card">
             
-            <!-- 1. Pomodoro Focus Timer -->
-            <div class="glass-panel rounded-3xl p-6 relative overflow-hidden transition-all duration-300 hover:border-white/10">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-300/80"><i class="fa-solid fa-hourglass-half mr-2"></i>Focus Engine</h2>
-                    <!-- Timer Modes -->
-                    <div class="flex bg-white/5 p-1 rounded-xl border border-white/5 text-xs">
-                        <button onclick="setTimerMode('work')" id="mode-work" class="px-3 py-1.5 rounded-lg font-medium transition-all text-white bg-indigo-600/50">Focus</button>
-                        <button onclick="setTimerMode('short')" id="mode-short" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">Short Break</button>
-                        <button onclick="setTimerMode('long')" id="mode-long" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">Long Break</button>
-                    </div>
-                </div>
-
-                <!-- Timer Display -->
-                <div class="flex flex-col items-center justify-center my-8 relative">
-                    <!-- Progress ring SVG -->
-                    <svg class="w-64 h-64 transform -rotate-90">
-                        <circle cx="128" cy="128" r="110" stroke="rgba(255,255,255,0.03)" stroke-width="8" fill="transparent"/>
-                        <circle id="timer-progress" cx="128" cy="128" r="110" stroke="#818cf8" stroke-width="8" fill="transparent"
-                                stroke-dasharray="691.15" stroke-dashoffset="0" class="transition-all duration-1000 ease-linear"/>
-                    </svg>
-                    <div class="absolute flex flex-col items-center justify-center timer-pulse">
-                        <span id="timer-time" class="text-5xl font-bold tracking-tight text-white mb-1">25:00</span>
-                        <span id="timer-status-text" class="text-xs font-semibold text-indigo-300/60 uppercase tracking-wider">Stay Focused</span>
-                    </div>
-                </div>
-
-                <!-- Timer Controls -->
-                <div class="flex justify-center items-center gap-4">
-                    <button id="btn-timer-reset" class="w-12 h-12 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-all">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </button>
-                    <button id="btn-timer-toggle" class="px-8 py-3.5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-zen-900 font-bold tracking-wide transition-all duration-300 shadow-lg shadow-indigo-500/20 glow-accent hover:scale-[1.02]">
-                        <i class="fa-solid fa-play mr-2"></i>START SESSION
-                    </button>
-                    <button id="btn-timer-skip" class="w-12 h-12 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-all">
-                        <i class="fa-solid fa-forward"></i>
-                    </button>
-                </div>
+            <!-- 상단 진행 바 (인쇄 제외) -->
+            <div class="bg-gray-100 h-2 w-full no-print">
+                <div id="progressBar" class="bg-blue-600 h-2 w-1/4 transition-all duration-300"></div>
             </div>
 
-            <!-- 2. Procedural Ambience Synthesizer -->
-            <div class="glass-panel rounded-3xl p-6 flex-grow flex flex-col transition-all duration-300 hover:border-white/10">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-300/80"><i class="fa-solid fa-sliders mr-2"></i>Ambient Synthesis</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Procedural sounds generated locally in real-time</p>
-                    </div>
-                    <!-- Master Mute Toggle -->
-                    <button id="btn-audio-master" class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-volume-xmark"></i> Audio Off
-                    </button>
+            <div class="p-6 md:p-10">
+                <!-- 상시 필수 법적 고지 -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl mb-6 text-xs text-amber-900 leading-relaxed no-print">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 서비스 한계 및 이용안내</p>
+                    본 시스템은 진단서 및 처방전을 대체할 수 없는 자가 판정 가이드라인 시뮬레이터입니다. 추천 약물 성분은 약국에서 바로 구매 가능한 일반의약품(OTC) 기반이며, 위급 상황 시 즉시 119를 부르거나 전문의를 찾아야 합니다.
                 </div>
 
-                <!-- Audio Mixer Controls -->
-                <div class="space-y-4 my-auto">
-                    <!-- Rain Ambient -->
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium flex items-center gap-2"><i class="fa-solid fa-cloud-showers-heavy text-indigo-300"></i> Soft Rain</span>
-                            <span id="val-rain" class="text-xs text-slate-400">Off</span>
+                <!-- 설문 입력 섹션 (no-print) -->
+                <div id="formSection" class="no-print">
+                    
+                    <!-- STEP 1: 아픈 부위 선택 -->
+                    <div id="step1" class="step-transition">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 01 / 03</span>
+                            <h2 class="text-2xl font-extrabold mt-1 text-gray-900">가장 불편하고 아픈 부위는 어디인가요?</h2>
+                            <p class="text-gray-500 text-sm mt-1">상태 분석을 시작할 중심 부위 한 곳을 터치해 주세요.</p>
                         </div>
-                        <input type="range" id="slider-rain" min="0" max="100" value="0" class="w-full accent-indigo-400 cursor-pointer bg-white/10 h-1.5 rounded-lg appearance-none">
-                    </div>
 
-                    <!-- Binaural Focus Tone -->
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium flex items-center gap-2"><i class="fa-solid fa-wave-square text-purple-300"></i> Gamma Brainwaves (40Hz)</span>
-                            <span id="val-binaural" class="text-xs text-slate-400">Off</span>
+                        <div class="grid grid-cols-2 gap-4 mb-8">
+                            <!-- 머리 / 얼굴 -->
+                            <button onclick="selectBodyPart(this, 'head')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-head-side-virus text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">머리 / 얼굴</span>
+                                <span class="text-xs text-gray-500 mt-1">두통, 어지러움, 신경통</span>
+                            </button>
+                            <!-- 목 / 가슴 / 호흡기 -->
+                            <button onclick="selectBodyPart(this, 'chest')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-lungs text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">목 / 가슴 / 호흡기</span>
+                                <span class="text-xs text-gray-500 mt-1">기침, 인후통, 가슴 쥐어짜임</span>
+                            </button>
+                            <!-- 배 / 소화기 -->
+                            <button onclick="selectBodyPart(this, 'stomach')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-stomach text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">배 / 소화기</span>
+                                <span class="text-xs text-gray-500 mt-1">복통, 체함, 소화불량, 설사</span>
+                            </button>
+                            <!-- 팔 / 다리 / 관절 -->
+                            <button onclick="selectBodyPart(this, 'limb')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-bone text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">팔 / 다리 / 관절</span>
+                                <span class="text-xs text-gray-500 mt-1">염좌, 타박상, 관절통, 근육통</span>
+                            </button>
+                            <!-- 피부 / 외부 상처 -->
+                            <button onclick="selectBodyPart(this, 'skin')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-hand-dots text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">피부 / 상처</span>
+                                <span class="text-xs text-gray-500 mt-1">발진, 가려움, 베인상처, 화상</span>
+                            </button>
+                            <!-- 기타 전신 / 몸살 -->
+                            <button onclick="selectBodyPart(this, 'general')" class="body-part-card border-2 border-gray-200 hover:border-blue-500 rounded-xl p-4 flex flex-col items-center text-center transition-all bg-white hover:bg-blue-50/20">
+                                <div class="bg-blue-50 text-blue-600 p-3 rounded-full mb-3"><i class="fa-solid fa-thermometer text-2xl"></i></div>
+                                <span class="font-bold text-gray-800">기타 / 몸살</span>
+                                <span class="text-xs text-gray-500 mt-1">발열, 오한, 무기력, 전신 아픔</span>
+                            </button>
                         </div>
-                        <input type="range" id="slider-binaural" min="0" max="100" value="0" class="w-full accent-purple-400 cursor-pointer bg-white/10 h-1.5 rounded-lg appearance-none">
-                    </div>
 
-                    <!-- Pink/White Deep Space Noise -->
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium flex items-center gap-2"><i class="fa-solid fa-atom text-emerald-300"></i> Cosmic Brown Noise</span>
-                            <span id="val-brown" class="text-xs text-slate-400">Off</span>
-                        </div>
-                        <input type="range" id="slider-brown" min="0" max="100" value="0" class="w-full accent-emerald-400 cursor-pointer bg-white/10 h-1.5 rounded-lg appearance-none">
-                    </div>
-                </div>
-
-                <div class="mt-4 text-[10px] text-indigo-300/40 text-center leading-relaxed">
-                    💡 <span class="font-medium">Pro-tip:</span> Headphones are highly recommended to experience binaural brain entrainment tones fully.
-                </div>
-            </div>
-
-        </section>
-
-        <!-- Right Side: Tasks, Zen Canvas, and Notes (7 Columns) -->
-        <section class="lg:col-span-7 flex flex-col gap-6">
-
-            <!-- 3. Task Manager with Categories -->
-            <div class="glass-panel rounded-3xl p-6 flex flex-col h-[400px] transition-all duration-300 hover:border-white/10">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-300/80"><i class="fa-solid fa-list-check mr-2"></i>Zen Flow Planner</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Set absolute priority targets for your zen state</p>
-                    </div>
-                    <!-- Quick Stats -->
-                    <div class="flex items-center gap-3 text-xs bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
-                        <span class="text-slate-400">Progress: <strong id="todo-stats" class="text-indigo-300">0/0 Completed</strong></span>
-                    </div>
-                </div>
-
-                <!-- Input Zone -->
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="input-todo" placeholder="What requires your supreme focus next?" class="flex-grow bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-white placeholder-slate-500">
-                    <button id="btn-add-todo" class="px-5 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-zen-900 font-bold transition-all flex items-center gap-1 shadow-lg shadow-indigo-500/10">
-                        <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">Add</span>
-                    </button>
-                </div>
-
-                <!-- Todo Scroll Area -->
-                <div class="flex-grow overflow-y-auto pr-2">
-                    <ul id="todo-container" class="space-y-2.5">
-                        <!-- Items injected dynamically -->
-                    </ul>
-                    <div id="todo-empty-state" class="h-full flex flex-col items-center justify-center text-center opacity-40 py-12">
-                        <i class="fa-solid fa-spa text-3xl mb-2 text-indigo-300"></i>
-                        <p class="text-sm">No tasks remaining. Your path is fully clear.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Two Column Area: Journal & Breath Visualizer -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
-                
-                <!-- 4. Quick Zen Canvas / Breath Visualizer -->
-                <div class="glass-panel rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/10 h-[280px]">
-                    <div>
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-300/80"><i class="fa-solid fa-wind mr-2"></i>Rhythmic Breathing</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Synchronize with the pulse for deep calm</p>
-                    </div>
-
-                    <!-- Breathe Indicator Canvas/Orb -->
-                    <div class="flex-grow flex items-center justify-center my-4 relative">
-                        <!-- Breath Pulse Ring -->
-                        <div id="breath-orb" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500/30 to-purple-500/30 border border-indigo-400/50 flex items-center justify-center transition-all duration-4000 ease-in-out shadow-lg shadow-indigo-500/20">
-                            <span id="breath-text" class="text-xs font-semibold tracking-wider text-indigo-100 uppercase">Inhale</span>
+                        <div class="flex justify-end">
+                            <button onclick="goToStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all">
+                                <span>다음 단계로</span> <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="text-center text-[11px] text-slate-400 tracking-wide font-medium">
-                        4s Inhale • 4s Hold • 4s Exhale
-                    </div>
-                </div>
+                    <!-- STEP 2: 통증 느낌 및 발생 상황 -->
+                    <div id="step2" class="hidden step-transition">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 02 / 03</span>
+                            <h2 class="text-2xl font-extrabold mt-1 text-gray-900">어떤 느낌으로 아프기 시작했나요?</h2>
+                            <p class="text-gray-500 text-sm mt-1">해당하는 상세 통증 형태와 상황을 각각 한 가지씩 선택하세요.</p>
+                        </div>
 
-                <!-- 5. Minimalist Daily Note Pad -->
-                <div class="glass-panel rounded-3xl p-6 flex flex-col transition-all duration-300 hover:border-white/10 h-[280px]">
-                    <div class="flex justify-between items-center mb-3">
-                        <div>
-                            <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-300/80"><i class="fa-solid fa-pen-nib mr-2"></i>Ephemeral Notes</h2>
-                            <p class="text-xs text-slate-400 mt-0.5">Fleeting thoughts, auto-saved locally</p>
+                        <!-- 통증 느낌 선택 -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">통증이 느껴지는 구체적인 느낌</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="selectPainType(this, 'sharp')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">⚡ 찌르거나 콕콕 쑤심</button>
+                                <button type="button" onclick="selectPainType(this, 'throbbing')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🔥 욱신거림 / 화끈화끈함</button>
+                                <button type="button" onclick="selectPainType(this, 'dull')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🪵 뻐근하고 무겁게 눌림</button>
+                                <button type="button" onclick="selectPainType(this, 'squeezing')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">✊ 쥐어짜거나 숨 가쁜 불쾌감</button>
+                                <button type="button" onclick="selectPainType(this, 'itchy')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🐜 가렵고 쓰라림 / 따끔거림</button>
+                                <button type="button" onclick="selectPainType(this, 'general_ache')" class="pain-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🤒 전신이 무겁고 마디마디 아픔</button>
+                            </div>
+                        </div>
+
+                        <!-- 발생 상황 선택 -->
+                        <div class="mb-8">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">증상이 발생하게 된 직접적인 원인/상황</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="selectSituation(this, 'sudden')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">⏱️ 갑작스럽게 예고 없이 시작</button>
+                                <button type="button" onclick="selectSituation(this, 'exercise')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🏃 과도한 운동이나 활동 중/후</button>
+                                <button type="button" onclick="selectSituation(this, 'food')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🍔 특정 음식/찬 것을 섭취한 후</button>
+                                <button type="button" onclick="selectSituation(this, 'trauma')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">💥 어딘가 부딪히거나 다친 외상</button>
+                                <button type="button" onclick="selectSituation(this, 'morning')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">🛌 자고 일어난 아침 직후</button>
+                                <button type="button" onclick="selectSituation(this, 'chronic')" class="sit-btn py-2.5 px-4 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-all text-left">📅 며칠 동안 서서히 악화됨</button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button onclick="goToStep(1)" class="border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all">
+                                <i class="fa-solid fa-arrow-left"></i> <span>이전 단계</span>
+                            </button>
+                            <button onclick="goToStep(3)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all">
+                                <span>다음 단계로</span> <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
-                    <!-- Note Textarea -->
-                    <textarea id="notes-textarea" placeholder="Pour down random ideas, drafts, or temporary items. Stored safely until you clear..." class="flex-grow w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none transition-all text-white placeholder-slate-500 leading-relaxed"></textarea>
+
+                    <!-- STEP 3: 동반 증상 및 상세 기술 -->
+                    <div id="step3" class="hidden step-transition">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Step 03 / 03</span>
+                            <h2 class="text-2xl font-extrabold mt-1 text-gray-900">추가로 함께 겪고 계신 불편함이 있나요?</h2>
+                            <p class="text-gray-500 text-sm mt-1">상태의 종합 분석을 위해 체크박스 및 기술란을 작성해 주세요.</p>
+                        </div>
+
+                        <!-- 동반 증상 멀티 체크 -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">동반 증상 (복수 선택 가능)</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="fever" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">고열 / 발열감</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="chills" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">오한 / 몸살기운</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="nausea" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">구토 / 울렁거림</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="dizzy" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">어지러움 / 현기증</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="fatigue" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">심한 피로감</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+                                    <input type="checkbox" value="swelling" class="extra-symptom-chk h-4 w-4 text-blue-600 rounded">
+                                    <span class="text-sm font-medium text-gray-700">환부 부종 / 붓기</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 추가적인 주관식 진술 -->
+                        <div class="mb-8">
+                            <label for="detailText" class="block text-sm font-bold text-gray-700 mb-2">기타 상세히 설명하고 싶은 내용</label>
+                            <textarea id="detailText" rows="3" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="예: 무거운 짐을 들었을 때부터 허리 주변이 당기듯 아파요."></textarea>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button onclick="goToStep(2)" class="border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all">
+                                <i class="fa-solid fa-arrow-left"></i> <span>이전 단계</span>
+                            </button>
+                            <button onclick="generatePrescription()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-xl flex items-center space-x-2 shadow-lg transition-all transform hover:-translate-y-0.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> <span>가상 스마트 가이드 분석</span>
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
 
-            </div>
-
-        </section>
-
-    </main>
-
-    <!-- Custom Toast Notification Box -->
-    <div id="toast-container" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
-
-    <!-- Footer -->
-    <footer class="w-full max-w-7xl mx-auto px-6 py-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4">
-        <div>
-            &copy; 2026 ZenSpace Ecosystem. Designed for optimal mindfulness.
-        </div>
-        <div id="quote-display" class="font-serif italic text-slate-300 max-w-lg text-center sm:text-right">
-            "Simplicity is the ultimate sophistication." — Leonardo da Vinci
-        </div>
-    </footer>
-
-    <script>
-        // --- 1. Audio System (Web Audio API) ---
-        let audioCtx = null;
-        let masterGain = null;
-        let rainSource = null;
-        let rainGain = null;
-        let binauralLeftOsc = null;
-        let binauralRightOsc = null;
-        let binauralGain = null;
-        let brownSource = null;
-        let brownGain = null;
-        let isAudioInitialized = false;
-        let isMuted = true;
-
-        function initAudio() {
-            if (isAudioInitialized) return;
-            try {
-                // Setup web audio api context
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Master output path
-                masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0, audioCtx.currentTime); // Start silent
-                masterGain.connect(audioCtx.destination);
-
-                // Initialize distinct nodes
-                setupRainSynthesizer();
-                setupBinauralTones();
-                setupBrownNoise();
-
-                isAudioInitialized = true;
-            } catch (e) {
-                console.error("Web Audio Context could not initialize: ", e);
-                showToast("Your browser does not support Web Audio API synthesis.", "error");
-            }
-        }
-
-        // --- 1.1 Synthesized Rain Sound ---
-        function setupRainSynthesizer() {
-            // Programmatically generating white/pink noise for rain
-            const bufferSize = audioCtx.sampleRate * 2;
-            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            
-            for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-
-            rainSource = audioCtx.createBufferSource();
-            rainSource.buffer = noiseBuffer;
-            rainSource.loop = true;
-
-            // Soft Lowpass Filter to shape the white noise into a warm rainfall sound
-            const rainFilter = audioCtx.createBiquadFilter();
-            rainFilter.type = 'lowpass';
-            rainFilter.frequency.setValueAtTime(850, audioCtx.currentTime);
-
-            // Shimmer/Resonance modulation
-            const waveOsc = audioCtx.createOscillator();
-            waveOsc.frequency.setValueAtTime(0.2, audioCtx.currentTime); // Ultra slow breath
-            const waveGain = audioCtx.createGain();
-            waveGain.gain.setValueAtTime(150, audioCtx.currentTime);
-            
-            waveOsc.connect(waveGain);
-            waveGain.connect(rainFilter.frequency);
-            waveOsc.start();
-
-            // Rain gain controller
-            rainGain = audioCtx.createGain();
-            rainGain.gain.setValueAtTime(0, audioCtx.currentTime);
-
-            // Build channel
-            rainSource.connect(rainFilter);
-            rainFilter.connect(rainGain);
-            rainGain.connect(masterGain);
-            rainSource.start();
-        }
-
-        // --- 1.2 Binaural Alpha Waves Tone ---
-        function setupBinauralTones() {
-            const merger = audioCtx.createChannelMerger(2);
-
-            // Left ear: base carrier frequency (200Hz)
-            binauralLeftOsc = audioCtx.createOscillator();
-            binauralLeftOsc.type = 'sine';
-            binauralLeftOsc.frequency.setValueAtTime(200, audioCtx.currentTime);
-
-            // Right ear: slightly offset for 10Hz Alpha/40Hz Gamma relaxation frequency difference (240Hz)
-            binauralRightOsc = audioCtx.createOscillator();
-            binauralRightOsc.type = 'sine';
-            binauralRightOsc.frequency.setValueAtTime(240, audioCtx.currentTime);
-
-            // Individual Channel Gains
-            const leftGain = audioCtx.createGain();
-            const rightGain = audioCtx.createGain();
-            leftGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            rightGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-
-            binauralLeftOsc.connect(leftGain);
-            binauralRightOsc.connect(rightGain);
-
-            leftGain.connect(merger, 0, 0);
-            rightGain.connect(merger, 0, 1);
-
-            // Lowpass to make the pure tones deeply warm and non-abrasive
-            const toneFilter = audioCtx.createBiquadFilter();
-            toneFilter.type = 'lowpass';
-            toneFilter.frequency.setValueAtTime(120, audioCtx.currentTime);
-
-            binauralGain = audioCtx.createGain();
-            binauralGain.gain.setValueAtTime(0, audioCtx.currentTime);
-
-            merger.connect(toneFilter);
-            toneFilter.connect(binauralGain);
-            binauralGain.connect(masterGain);
-
-            binauralLeftOsc.start();
-            binauralRightOsc.start();
-        }
-
-        // --- 1.3 Cosmic Brown Noise ---
-        function setupBrownNoise() {
-            // Math for Brownian Noise generation
-            const bufferSize = audioCtx.sampleRate * 2;
-            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            let lastOut = 0.0;
-
-            for (let i = 0; i < bufferSize; i++) {
-                const white = Math.random() * 2 - 1;
-                output[i] = (lastOut + (0.02 * white)) / 1.02;
-                lastOut = output[i];
-                output[i] *= 3.5; // Compensate for loss of gain
-            }
-
-            brownSource = audioCtx.createBufferSource();
-            brownSource.buffer = noiseBuffer;
-            brownSource.loop = true;
-
-            const brownFilter = audioCtx.createBiquadFilter();
-            brownFilter.type = 'lowpass';
-            brownFilter.frequency.setValueAtTime(400, audioCtx.currentTime);
-
-            brownGain = audioCtx.createGain();
-            brownGain.gain.setValueAtTime(0, audioCtx.currentTime);
-
-            brownSource.connect(brownFilter);
-            brownFilter.connect(brownGain);
-            brownGain.connect(masterGain);
-
-            brownSource.start();
-        }
-
-        // --- Audio Toggles and Sliders ---
-        const btnAudioMaster = document.getElementById('btn-audio-master');
-        const sliderRain = document.getElementById('slider-rain');
-        const sliderBinaural = document.getElementById('slider-binaural');
-        const sliderBrown = document.getElementById('slider-brown');
-
-        const valRain = document.getElementById('val-rain');
-        const valBinaural = document.getElementById('val-binaural');
-        const valBrown = document.getElementById('val-brown');
-
-        function toggleMasterMute() {
-            initAudio();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-
-            if (isMuted) {
-                // Unmute
-                masterGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.3);
-                btnAudioMaster.innerHTML = `<i class="fa-solid fa-volume-high"></i> Audio On`;
-                btnAudioMaster.classList.remove('border-rose-500/30', 'text-rose-400', 'bg-rose-500/5');
-                btnAudioMaster.classList.add('border-emerald-500/30', 'text-emerald-400', 'bg-emerald-500/5');
-                isMuted = false;
-                showToast("Ambience Audio is activated! Unmute separate tracks below.");
-            } else {
-                // Mute
-                masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
-                btnAudioMaster.innerHTML = `<i class="fa-solid fa-volume-xmark"></i> Audio Off`;
-                btnAudioMaster.classList.remove('border-emerald-500/30', 'text-emerald-400', 'bg-emerald-500/5');
-                btnAudioMaster.classList.add('border-rose-500/30', 'text-rose-400', 'bg-rose-500/5');
-                isMuted = true;
-            }
-        }
-
-        btnAudioMaster.addEventListener('click', toggleMasterMute);
-
-        function handleVolumeChange(slider, gainNode, label, name) {
-            initAudio();
-            const value = slider.value;
-            const dbVal = value / 100;
-            
-            if (gainNode) {
-                // Logarithmic mapping for natural volume feel
-                gainNode.gain.setTargetAtTime(dbVal * 0.8, audioCtx.currentTime, 0.1);
-            }
-            
-            label.textContent = value > 0 ? `${value}%` : 'Off';
-            
-            // Auto unmute master if user adjusts a channel slider and is muted
-            if (value > 0 && isMuted) {
-                toggleMasterMute();
-            }
-        }
-
-        sliderRain.addEventListener('input', () => handleVolumeChange(sliderRain, rainGain, valRain, 'Rain'));
-        sliderBinaural.addEventListener('input', () => handleVolumeChange(sliderBinaural, binauralGain, valBinaural, 'Binaural'));
-        sliderBrown.addEventListener('input', () => handleVolumeChange(sliderBrown, brownGain, valBrown, 'Brown'));
-
-
-        // --- 2. Focus Timer (Pomodoro) System ---
-        let timerMode = 'work'; // 'work', 'short', 'long'
-        let timerDuration = 25 * 60; // default seconds
-        let secondsLeft = 25 * 60;
-        let timerInterval = null;
-        let isTimerRunning = false;
-
-        const modes = {
-            work: { duration: 25 * 60, accent: '#818cf8', label: 'Stay Focused', toast: "It's time to immerse in work." },
-            short: { duration: 5 * 60, accent: '#34d399', label: 'Breathe and Relax', toast: "Take a short conscious breather." },
-            long: { duration: 15 * 60, accent: '#60a5fa', label: 'Disconnect Fully', toast: "Enjoy a deep recovery session." }
-        };
-
-        const timerDisplay = document.getElementById('timer-time');
-        const timerStatusText = document.getElementById('timer-status-text');
-        const timerProgressRing = document.getElementById('timer-progress');
-        const btnTimerToggle = document.getElementById('btn-timer-toggle');
-        const btnTimerReset = document.getElementById('btn-timer-reset');
-        const btnTimerSkip = document.getElementById('btn-timer-skip');
-
-        function setTimerMode(mode) {
-            timerMode = mode;
-            timerDuration = modes[mode].duration;
-            secondsLeft = timerDuration;
-            
-            // Update Active Buttons visually
-            ['work', 'short', 'long'].forEach(m => {
-                const button = document.getElementById(`mode-${m}`);
-                if (m === mode) {
-                    button.classList.add('bg-indigo-600/50', 'text-white');
-                    button.classList.remove('text-slate-400');
-                } else {
-                    button.classList.remove('bg-indigo-600/50', 'text-white');
-                    button.classList.add('text-slate-400');
-                }
-            });
-
-            // Update Progress Ring color depending on theme
-            timerProgressRing.setAttribute('stroke', modes[mode].accent);
-
-            updateTimerDisplay();
-            showToast(modes[mode].toast);
-            
-            if (isTimerRunning) {
-                pauseTimer();
-            }
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(secondsLeft / 60);
-            const seconds = secondsLeft % 60;
-            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            timerStatusText.textContent = modes[timerMode].label;
-
-            // Calculate progress offset
-            const maxOffset = 691.15; // 2 * PI * r (110)
-            const progress = (timerDuration - secondsLeft) / timerDuration;
-            const offset = maxOffset * (1 - progress);
-            timerProgressRing.style.strokeDashoffset = offset;
-        }
-
-        function toggleTimer() {
-            if (isTimerRunning) {
-                pauseTimer();
-            } else {
-                startTimer();
-            }
-        }
-
-        function startTimer() {
-            isTimerRunning = true;
-            btnTimerToggle.innerHTML = `<i class="fa-solid fa-pause mr-2"></i>PAUSE SESSION`;
-            btnTimerToggle.className = "px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zen-900 font-bold tracking-wide transition-all duration-300 shadow-lg shadow-amber-500/20 hover:scale-[1.02]";
-            
-            timerInterval = setInterval(() => {
-                if (secondsLeft > 0) {
-                    secondsLeft--;
-                    updateTimerDisplay();
-                } else {
-                    handleTimerCompletion();
-                }
-            }, 1000);
-        }
-
-        function pauseTimer() {
-            isTimerRunning = false;
-            clearInterval(timerInterval);
-            btnTimerToggle.innerHTML = `<i class="fa-solid fa-play mr-2"></i>RESUME SESSION`;
-            btnTimerToggle.className = "px-8 py-3.5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-zen-900 font-bold tracking-wide transition-all duration-300 shadow-lg shadow-indigo-500/20 glow-accent hover:scale-[1.02]";
-        }
-
-        function resetTimer() {
-            pauseTimer();
-            secondsLeft = timerDuration;
-            updateTimerDisplay();
-            btnTimerToggle.innerHTML = `<i class="fa-solid fa-play mr-2"></i>START SESSION`;
-            btnTimerToggle.className = "px-8 py-3.5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-zen-900 font-bold tracking-wide transition-all duration-300 shadow-lg shadow-indigo-500/20 glow-accent hover:scale-[1.02]";
-            showToast("Timer has been reset.");
-        }
-
-        function skipTimer() {
-            pauseTimer();
-            handleTimerCompletion();
-        }
-
-        function handleTimerCompletion() {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            
-            // Create rich visual notification
-            showToast(`Session finished! Well done.`, "success");
-            
-            // Auto switch modes
-            if (timerMode === 'work') {
-                setTimerMode('short');
-            } else {
-                setTimerMode('work');
-            }
-            resetTimer();
-        }
-
-        btnTimerToggle.addEventListener('click', toggleTimer);
-        btnTimerReset.addEventListener('click', resetTimer);
-        btnTimerSkip.addEventListener('click', skipTimer);
-
-
-        // --- 3. Todo Planner System ---
-        const inputTodo = document.getElementById('input-todo');
-        const btnAddTodo = document.getElementById('btn-add-todo');
-        const todoContainer = document.getElementById('todo-container');
-        const todoEmptyState = document.getElementById('todo-empty-state');
-        const todoStats = document.getElementById('todo-stats');
-
-        let todos = JSON.parse(localStorage.getItem('zenspace_todos')) || [
-            { id: 1, text: "Perform 10 Deep Breaths", completed: true },
-            { id: 2, text: "Focus entirely for one Pomodoro block", completed: false },
-            { id: 3, text: "Hydrate and stretch properly", completed: false }
-        ];
-
-        function saveToLocalStorage() {
-            localStorage.setItem('zenspace_todos', JSON.stringify(todos));
-            updateTodoUI();
-        }
-
-        function addTodo() {
-            const text = inputTodo.value.trim();
-            if (!text) return;
-
-            const newTodo = {
-                id: Date.now(),
-                text: text,
-                completed: false
-            };
-
-            todos.push(newTodo);
-            inputTodo.value = '';
-            saveToLocalStorage();
-            showToast("Added task to target list.");
-        }
-
-        function toggleTodo(id) {
-            todos = todos.map(todo => {
-                if (todo.id === id) {
-                    const nextState = !todo.completed;
-                    if (nextState) showToast("Task complete! Breathe out.", "success");
-                    return { ...todo, completed: nextState };
-                }
-                return todo;
-            });
-            saveToLocalStorage();
-        }
-
-        function deleteTodo(id) {
-            todos = todos.filter(todo => todo.id !== id);
-            saveToLocalStorage();
-            showToast("Task removed.", "neutral");
-        }
-
-        function updateTodoUI() {
-            todoContainer.innerHTML = '';
-            
-            if (todos.length === 0) {
-                todoEmptyState.style.display = 'flex';
-                todoStats.textContent = '0/0 Completed';
-                return;
-            } else {
-                todoEmptyState.style.display = 'none';
-            }
-
-            const completedCount = todos.filter(t => t.completed).length;
-            todoStats.textContent = `${completedCount}/${todos.length} Completed`;
-
-            todos.forEach(todo => {
-                const li = document.createElement('li');
-                li.className = `flex justify-between items-center bg-white/5 border border-white/5 rounded-2xl px-4 py-3.5 transition-all duration-300 hover:bg-white/10 ${todo.completed ? 'opacity-55' : ''}`;
-
-                li.innerHTML = `
-                    <div class="flex items-center gap-3 cursor-pointer flex-grow" onclick="toggleTodo(${todo.id})">
-                        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${todo.completed ? 'bg-indigo-500 border-indigo-500 text-zen-900' : 'border-white/20' }">
-                            ${todo.completed ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
+                <!-- RESULTS SECTION (분석 결과 화면) -->
+                <div id="resultSection" class="hidden">
+                    
+                    <div class="border-b-2 border-dashed border-gray-300 pb-6 mb-6">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-blue-700 flex items-center">
+                                    <i class="fa-solid fa-receipt mr-3"></i>가상 스마트 처방 가이드
+                                </h2>
+                                <p class="text-gray-500 text-sm mt-1">사용자가 직접 입력한 기록을 토대로 도출된 요약안입니다.</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-left md:text-right text-xs text-gray-500">
+                                <p><strong>참조 일시:</strong> <span id="currentDate"></span></p>
+                                <p><strong>상태 코드:</strong> MEDI-GUIDE-PRO</p>
+                            </div>
                         </div>
-                        <span class="text-sm tracking-wide ${todo.completed ? 'line-through' : ''}">${todo.text}</span>
                     </div>
-                    <button onclick="deleteTodo(${todo.id})" class="text-slate-500 hover:text-rose-400 transition-colors px-2">
-                        <i class="fa-solid fa-trash-can text-sm"></i>
-                    </button>
-                `;
-                todoContainer.appendChild(li);
-            });
-        }
 
-        btnAddTodo.addEventListener('click', addTodo);
-        inputTodo.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTodo();
-        });
+                    <!-- 요약된 입력 데이터 -->
+                    <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h3 class="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2"><i class="fa-solid fa-user-tag mr-1"></i> 확인된 자가 보고 요약</h3>
+                        <p class="text-gray-800 text-sm md:text-base leading-relaxed whitespace-pre-line" id="symptomSummaryText"></p>
+                    </div>
 
+                    <!-- 의심 요인 분석 의견 -->
+                    <div class="mb-6">
+                        <h3 class="text-base font-bold text-gray-800 mb-2 flex items-center">
+                            <i class="fa-solid fa-stethoscope text-blue-600 mr-2"></i> 자가 의심 요인 분석
+                        </h3>
+                        <div class="bg-blue-50 text-blue-900 p-5 rounded-xl border border-blue-100 leading-relaxed text-sm md:text-base">
+                            <p id="analysisOpinion" class="font-medium"></p>
+                        </div>
+                    </div>
 
-        // --- 4. Ephemeral Notes System ---
-        const notesTextarea = document.getElementById('notes-textarea');
+                    <!-- 일반의약품(OTC) 약리 성분 정보 -->
+                    <div class="mb-6">
+                        <h3 class="text-base font-bold text-gray-800 mb-2 flex items-center">
+                            <i class="fa-solid fa-pills text-emerald-600 mr-2"></i> 추천 일반의약품(OTC) 정보
+                        </h3>
+                        <div class="bg-emerald-50 text-emerald-950 p-5 rounded-xl border border-emerald-100">
+                            <p class="font-bold text-sm text-emerald-800 mb-2"><i class="fa-solid fa-capsules mr-1.5"></i> 권장 의약품 성분 계열:</p>
+                            <p id="recommendedDrugName" class="text-lg font-black text-gray-900 ml-1 mb-4"></p>
+                            
+                            <p class="font-bold text-sm text-emerald-800 mb-1"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i> 안전한 대처 요령 및 권장 복용량:</p>
+                            <p id="recommendedUsage" class="text-sm text-gray-700 ml-1 leading-relaxed"></p>
+                        </div>
+                    </div>
 
-        // Load saved notes
-        notesTextarea.value = localStorage.getItem('zenspace_notes') || '';
+                    <!-- 진료과 및 위험 신호 정보 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-indigo-900 text-sm mb-1"><i class="fa-solid fa-hospital mr-1.5"></i> 방문 권장 임상 과목</h4>
+                                <p id="recommendedDept" class="text-lg font-black text-indigo-700 mt-1"></p>
+                            </div>
+                            <span class="text-xs text-indigo-500 mt-3">※ 증상이 지속되거나 완화 기미가 보이지 않을 시 조기에 해당 의원에 내원해야 합니다.</span>
+                        </div>
 
-        // Auto-save notes on input
-        notesTextarea.addEventListener('input', () => {
-            localStorage.setItem('zenspace_notes', notesTextarea.value);
-        });
-
-
-        // --- 5. Rhythmic Breathing Logic ---
-        const breathOrb = document.getElementById('breath-orb');
-        const breathText = document.getElementById('breath-text');
-        
-        let breathingPhase = 0; // 0: inhale, 1: hold, 2: exhale, 3: rest
-        const breathingModes = [
-            { text: "Inhale", scale: "scale-[1.8]", bg: "from-indigo-500/40 to-indigo-400/30", color: "#818cf8" },
-            { text: "Hold", scale: "scale-[1.8]", bg: "from-emerald-500/40 to-emerald-400/30", color: "#34d399" },
-            { text: "Exhale", scale: "scale-[1.0]", bg: "from-purple-500/40 to-purple-400/30", color: "#c084fc" },
-            { text: "Hold", scale: "scale-[1.0]", bg: "from-slate-500/40 to-slate-400/30", color: "#94a3b8" }
-        ];
-
-        function runBreathingCycle() {
-            const currentMode = breathingModes[breathingPhase];
-            
-            // Adjust visual classes
-            breathOrb.className = `w-20 h-20 rounded-full bg-gradient-to-tr ${currentMode.bg} border-2 flex items-center justify-center transition-all duration-4000 ease-in-out shadow-lg shadow-indigo-500/10 ${currentMode.scale}`;
-            breathOrb.style.borderColor = currentMode.color;
-            breathText.textContent = currentMode.text;
-            breathText.style.color = currentMode.color;
-
-            // Cycle phases every 4 seconds (4000ms) matching CSS transition
-            breathingPhase = (breathingPhase + 1) % 4;
-        }
-
-        setInterval(runBreathingCycle, 4000);
-        runBreathingCycle(); // Init cycle
-
-
-        // --- 6. Helper Functions: Clock & Quotes & Toast ---
-        function updateClock() {
-            const now = new Date();
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // mapping 0 to 12
-            document.getElementById('live-clock').textContent = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        const quotes = [
-            { q: "Focus is a muscle, and you are building it right now.", a: "Unknown" },
-            { q: "Simplicity is the key to deep concentration.", a: "Zen Proverb" },
-            { q: "Quiet the mind, and the soul will speak.", a: "Ma Jaya Sati Bhagavati" },
-            { q: "Do not seek to follow in the footsteps of the wise. Seek what they sought.", a: "Basho" },
-            { q: "One conscious breath in and out is a meditation.", a: "Eckhart Tolle" },
-            { q: "He who has a why to live can bear almost any how.", a: "Friedrich Nietzsche" }
-        ];
-
-        function rotateQuote() {
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            const quote = quotes[randomIndex];
-            document.getElementById('quote-display').innerHTML = `"${quote.q}" — <span class="not-italic opacity-70">${quote.a}</span>`;
-        }
-        rotateQuote();
-        setInterval(rotateQuote, 30000); // Rotate every 30s
-
-        // Toast notification triggers without using the prompt or alert functions
-        function showToast(message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let icon = '<i class="fa-solid fa-bell text-indigo-400"></i>';
-            if (type === "success") icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-            if (type === "error") icon = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
-
-            toast.className = "flex items-center gap-3 bg-zen-800 border border-white/10 px-4 py-3 rounded-2xl text-xs tracking-wide shadow-2xl pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300";
-            toast.innerHTML = `
-                ${icon}
-                <span class="font-medium text-slate-200">${message}</span>
-            `;
-            
-            container.appendChild(toast);
-            
-            // animate slide in
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            // destroy toast after delay
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // --- Initial Load Setup ---
-        window.onload = function() {
-            updateTodoUI();
-            showToast("Welcome to ZenSpace. Turn on audio at the master switch to begin.");
-        };
-    </script>
-</body>
-</html>
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-red-950 text-sm mb-1"><i class="fa-solid fa-shield-halved mr-1.5"></i> 긴급대처(레드 플래그) 경고</h4>
+                                <p id="criticalWarning" class="text-sm text-red-900 mt-1 leading-relaxed
+...
