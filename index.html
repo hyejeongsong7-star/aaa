@@ -198,6 +198,59 @@
                             </div>
                         </div>
 
+                        <!-- [선택 사항] 내 주변 병원 추천 활성화 토글 영역 -->
+                        <div class="mb-6 bg-blue-50/40 p-5 rounded-xl border border-blue-100/80">
+                            <label class="flex items-start space-x-3 cursor-pointer">
+                                <input type="checkbox" id="enableHospitalRecommend" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500 mt-0.5" onchange="toggleHospitalSelection()">
+                                <div class="flex-grow">
+                                    <span class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-map-location-dot text-blue-600"></i> 실제 근처 병원 추천 받기 <span class="text-xs bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded">선택 동의</span>
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">원치 않으시면 체크하지 않으셔도 무방합니다. 동의 시 실제 거점 병원 데이터와 모바일 맵 검색 연동 기능을 제공합니다.</p>
+                                </div>
+                            </label>
+                            
+                            <!-- 세부 위치 지정 판넬 (기본 숨김) -->
+                            <div id="locationSelectionPanel" class="hidden mt-4 pt-4 border-t border-blue-100/50 space-y-3">
+                                <p class="text-xs font-extrabold text-blue-900"><i class="fa-solid fa-street-view"></i> 병원 정보를 탐색할 위치 탐색 수단</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" onclick="setLocMethod('gps')" id="btnLocGps" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-blue-300 bg-blue-50 text-blue-700 transition-all text-center flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-location-crosshairs"></i> 실시간 GPS 연동
+                                    </button>
+                                    <button type="button" onclick="setLocMethod('manual')" id="btnLocManual" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-gray-300 bg-white text-gray-700 transition-all text-center flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-map-pin"></i> 수동 지역 선택
+                                    </button>
+                                </div>
+                                
+                                <!-- 수동 선택 드롭다운 -->
+                                <div id="manualLocationSelects" class="hidden grid grid-cols-2 gap-2">
+                                    <select id="sidoSelect" onchange="updateSigungu()" class="p-2.5 border border-gray-300 rounded-xl text-xs bg-white focus:ring-1 focus:ring-blue-500">
+                                        <option value="">시/도 선택</option>
+                                        <option value="서울특별시">서울특별시</option>
+                                        <option value="경기도">경기도</option>
+                                        <option value="인천광역시">인천광역시</option>
+                                        <option value="부산광역시">부산광역시</option>
+                                        <option value="대구광역시">대구광역시</option>
+                                        <option value="대전광역시">대전광역시</option>
+                                        <option value="광주광역시">광주광역시</option>
+                                        <option value="울산광역시">울산광역시</option>
+                                        <option value="세종특별자치시">세종특별자치시</option>
+                                        <option value="강원특별자치도">강원특별자치도</option>
+                                        <option value="충청북도">충청북도</option>
+                                        <option value="충청남도">충청남도</option>
+                                        <option value="전라북도">전라북도</option>
+                                        <option value="전라남도">전라남도</option>
+                                        <option value="경상북도">경상북도</option>
+                                        <option value="경상남도">경상남도</option>
+                                        <option value="제주특별자치도">제주특별자치도</option>
+                                    </select>
+                                    <select id="sigunguSelect" class="p-2.5 border border-gray-300 rounded-xl text-xs bg-white focus:ring-1 focus:ring-blue-500">
+                                        <option value="">시/군/구 선택</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 추가적인 주관식 진술 -->
                         <div class="mb-8">
                             <label for="detailText" class="block text-sm font-bold text-gray-700 mb-2">기타 상세히 설명하고 싶은 내용</label>
@@ -247,6 +300,40 @@
                         </h3>
                         <div class="bg-blue-50/50 text-blue-900 p-5 rounded-xl border border-blue-100 leading-relaxed text-sm md:text-base">
                             <p id="analysisOpinion" class="font-medium"></p>
+                        </div>
+                    </div>
+
+                    <!-- 실제 병원 추천 섹션 (조건부 노출) -->
+                    <div id="hospitalRecommendResult" class="hidden mb-6">
+                        <h3 class="text-base font-bold text-gray-800 mb-2.5 flex items-center">
+                            <i class="fa-solid fa-hospital-user text-blue-600 mr-2"></i> 실제 거점 전문의료기관 추천 (선택 연동)
+                        </h3>
+                        <div class="bg-gradient-to-br from-slate-50 to-blue-50/30 border border-slate-200 rounded-2xl p-5">
+                            <div class="flex items-center justify-between mb-3.5">
+                                <span class="text-xs bg-indigo-100 text-indigo-800 font-extrabold px-3 py-1 rounded-full flex items-center gap-1">
+                                    <i class="fa-solid fa-house-medical"></i> 맞춤 진료 분과: <span id="targetDeptBadge"></span>
+                                </span>
+                                <span class="text-[11px] text-gray-500 font-semibold" id="appliedLocationLabel">위치: GPS 실시간 산출</span>
+                            </div>
+                            
+                            <!-- 거점 대형병원 추천 목록 -->
+                            <div id="hospitalCardsContainer" class="space-y-3 mb-4">
+                                <!-- JS가 맞춤형 실제 대형 거점 병원을 삽입해 줍니다 -->
+                            </div>
+
+                            <p class="text-[11px] text-gray-500 leading-normal mb-3">
+                                <i class="fa-solid fa-circle-info mr-1"></i> 추천 거점 외 주변 일반 개인 연계의원은 아래 네이버/카카오 지도 바로가기를 눌러 현 위치 근방의 전체 목록을 실시간으로 확인하실 수 있습니다.
+                            </p>
+
+                            <!-- 외부 지도 연동 버튼 -->
+                            <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200/60">
+                                <a id="naverMapLink" href="#" target="_blank" class="py-3 px-4 rounded-xl text-xs font-bold text-center transition-all bg-[#03C75A] text-white hover:opacity-90 flex items-center justify-center gap-1.5 shadow-sm">
+                                    <span class="font-extrabold text-[10px] bg-white text-[#03C75A] rounded px-1">N</span> 네이버 지도로 보기
+                                </a>
+                                <a id="kakaoMapLink" href="#" target="_blank" class="py-3 px-4 rounded-xl text-xs font-bold text-center transition-all bg-[#FEE500] text-[#191919] hover:opacity-90 flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-location-dot"></i> 카카오 맵으로 보기
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -317,12 +404,178 @@
             painType: null,
             situation: null,
             extraSymptoms: [],
-            detailText: ""
+            detailText: "",
+            // 병원 추천 옵션 추가 데이터
+            hospitalRecommend: false,
+            locationMethod: 'gps', // 'gps' or 'manual'
+            selectedSido: '',
+            selectedSigungu: '',
+            gpsCoords: null
         };
+
+        // 행정구역 데이터셋 (실제 대형 대학병원 매핑용)
+        const sigunguData = {
+            "서울특별시": ["종로구", "강남구", "서초구", "송파구", "마포구", "영등포구", "서대문구"],
+            "경기도": ["수원시", "성남시", "안산시", "고양시", "용인시", "부천시", "의정부시"],
+            "인천광역시": ["연수구", "남동구", "부평구", "미추홀구", "중구"],
+            "부산광역시": ["서구", "금정구", "부산진구", "해운대구"],
+            "대구광역시": ["중구", "북구", "동구", "수성구"],
+            "대전광역시": ["중구", "서구", "유성구"],
+            "광주광역시": ["동구", "남구", "북구"],
+            "울산광역시": ["동구", "남구", "북구"],
+            "세종특별자치시": ["세종시"],
+            "강원특별자치도": ["춘천시", "원주시", "강릉시"],
+            "충청북도": ["청주시", "충주시"],
+            "충청남도": ["천안시", "아산시"],
+            "전라북도": ["전주시", "익산시"],
+            "전라남도": ["화순군", "목포시", "여수시"],
+            "경상북도": ["경주시", "포항시", "안동시"],
+            "경상남도": ["창원시", "진주시", "양산시"],
+            "제주특별자치도": ["제주시", "서귀포시"]
+        };
+
+        // 대표 거점 실존 종합병원 매핑 데이터 (수동 선택 시 활용)
+        const regionalHospitals = {
+            "서울특별시": [
+                { name: "서울대학교병원", addr: "서울 종로구 대학로 101", tel: "1588-5700" },
+                { name: "세브란스병원", addr: "서울 서대문구 연세로 50-1", tel: "1599-1004" },
+                { name: "서울아산병원", addr: "서울 송파구 올림픽로43길 88", tel: "1688-7575" }
+            ],
+            "경기도": [
+                { name: "분당서울대학교병원", addr: "경기 성남시 분당구 구미로173번길 82", tel: "1588-3366" },
+                { name: "아주대학교병원", addr: "경기 수원시 영통구 월드컵로 164", tel: "1688-6114" },
+                { name: "고려대학교안산병원", addr: "경기 안산시 단원구 적금로 123", tel: "1577-7516" }
+            ],
+            "인천광역시": [
+                { name: "인하대학교병원", addr: "인천 중구 인항로 27", tel: "032-890-2114" },
+                { name: "가천대길병원", addr: "인천 남동구 남동대로 774번길 21", tel: "1577-2299" }
+            ],
+            "부산광역시": [
+                { name: "부산대학교병원", addr: "부산 서구 구덕로 179", tel: "051-240-7000" },
+                { name: "양산부산대학교병원", addr: "경남 양산시 물금읍 금오로 20", tel: "1577-7512" }
+            ],
+            "대구광역시": [
+                { name: "경북대학교병원", addr: "대구 중구 동덕로 130", tel: "1577-7500" },
+                { name: "계명대학교 동산병원", addr: "대구 달서구 달구벌대로 1035", tel: "1577-7500" }
+            ],
+            "대전광역시": [
+                { name: "충남대학교병원", addr: "대전 중구 문화로 282", tel: "1588-7799" },
+                { name: "건양대학교병원", addr: "대전 서구 관저동로 158", tel: "1577-3330" }
+            ],
+            "광주광역시": [
+                { name: "전남대학교병원", addr: "광주 동구 제봉로 42", tel: "1899-0000" },
+                { name: "조선대학교병원", addr: "광주 동구 필문대로 365", tel: "1577-5353" }
+            ],
+            "울산광역시": [
+                { name: "울산대학교병원", addr: "울산 동구 방어진순환도로 877", tel: "1588-2323" }
+            ],
+            "세종특별자치시": [
+                { name: "세종충남대학교병원", addr: "세종 보듬7로 20", tel: "1800-3100" }
+            ],
+            "강원특별자치도": [
+                { name: "강원대학교병원", addr: "강원 춘천시 백령로 156", tel: "033-258-2000" },
+                { name: "연세대 원주세브란스기독병원", addr: "강원 원주시 일산로 20", tel: "033-741-2114" }
+            ],
+            "충청북도": [
+                { name: "충북대학교병원", addr: "충북 청주시 서원구 1순환로 776", tel: "043-269-6114" }
+            ],
+            "충청남도": [
+                { name: "단국대학교병원", addr: "충남 천안시 동남구 망향로 201", tel: "1588-0063" },
+                { name: "순천향대학교 부속 천안병원", addr: "충남 천안시 동남구 순천향6길 31", tel: "1577-7523" }
+            ],
+            "전라북도": [
+                { name: "전북대학교병원", addr: "전북 전주시 덕진구 건지로 20", tel: "063-250-1114" }
+            ],
+            "전라남도": [
+                { name: "화순전남대학교병원", addr: "전남 화순군 화순읍 서양로 322", tel: "1899-0000" }
+            ],
+            "경상북도": [
+                { name: "동국대학교 경주병원", addr: "경북 경주시 동대로 87", tel: "1899-0000" }
+            ],
+            "경상남도": [
+                { name: "경상국립대학교병원", addr: "경남 진주시 강남로 79", tel: "055-750-8000" }
+            ],
+            "제주특별자치도": [
+                { name: "제주대학교병원", addr: "제주 제주시 아란13길 15", tel: "064-717-1000" }
+            ]
+        };
+
+        // 병원 추천 선택 동의 여부에 따른 패널 토글
+        function toggleHospitalSelection() {
+            const chk = document.getElementById('enableHospitalRecommend');
+            const panel = document.getElementById('locationSelectionPanel');
+            appState.hospitalRecommend = chk.checked;
+            
+            if (chk.checked) {
+                panel.classList.remove('hidden');
+                triggerToast("병원 추천 기능이 활성화되었습니다. 위치 방식을 선택해 주세요.", "success");
+                // 기본으로 GPS 활성화 시도
+                setLocMethod('gps');
+            } else {
+                panel.classList.add('hidden');
+                triggerToast("병원 추천 기능이 꺼졌습니다.", "info");
+            }
+        }
+
+        // 위치 탐색 수단 변환
+        function setLocMethod(method) {
+            appState.locationMethod = method;
+            const btnGps = document.getElementById('btnLocGps');
+            const btnManual = document.getElementById('btnLocManual');
+            const manualDropdowns = document.getElementById('manualLocationSelects');
+
+            if (method === 'gps') {
+                btnGps.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-blue-500 bg-blue-100 text-blue-800 transition-all text-center flex items-center justify-center gap-1";
+                btnManual.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-gray-300 bg-white text-gray-700 transition-all text-center flex items-center justify-center gap-1";
+                manualDropdowns.classList.add('hidden');
+
+                // GPS 허용 받기
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            appState.gpsCoords = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            triggerToast("GPS 위치 정보가 성공적으로 허용되었습니다.", "success");
+                        },
+                        (error) => {
+                            triggerToast("GPS 권한 획득에 실패했습니다. 수동 지역 선택을 권장합니다.", "warning");
+                            setLocMethod('manual');
+                        }
+                    );
+                } else {
+                    triggerToast("지원되지 않는 브라우저입니다. 수동 위치 설정을 전환합니다.", "warning");
+                    setLocMethod('manual');
+                }
+            } else {
+                btnManual.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-blue-500 bg-blue-100 text-blue-800 transition-all text-center flex items-center justify-center gap-1";
+                btnGps.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-gray-300 bg-white text-gray-700 transition-all text-center flex items-center justify-center gap-1";
+                manualDropdowns.classList.remove('hidden');
+                triggerToast("탐색하실 행정구역(시/도)을 선택하세요.", "info");
+            }
+        }
+
+        // 수동 시도 선택에 따른 시군구 정보 동적 렌더링
+        function updateSigungu() {
+            const sido = document.getElementById('sidoSelect').value;
+            const sigunguSelect = document.getElementById('sigunguSelect');
+            appState.selectedSido = sido;
+            
+            sigunguSelect.innerHTML = '<option value="">시/군/구 선택</option>';
+            
+            if (sido && sigunguData[sido]) {
+                sigunguData[sido].forEach(sg => {
+                    const opt = document.createElement('option');
+                    opt.value = sg;
+                    opt.innerText = sg;
+                    sigunguSelect.appendChild(opt);
+                });
+            }
+        }
 
         // STEP 1: 신체 부위 선택 이벤트 처리
         function selectBodyPart(element, partKey) {
-            // 모든 바디 파트 카드 활성화 리셋
             document.querySelectorAll('.body-part-card').forEach(card => {
                 card.classList.remove('border-blue-600', 'bg-blue-50/20', 'ring-2', 'ring-blue-500/10');
                 card.classList.add('border-gray-200', 'bg-white');
@@ -333,7 +586,6 @@
                 }
             });
 
-            // 선택된 요소 활성화 상태 적용
             element.classList.remove('border-gray-200', 'bg-white');
             element.classList.add('border-blue-600', 'bg-blue-50/20', 'ring-2', 'ring-blue-500/10');
             const iconContainer = element.querySelector('.icon-container');
@@ -390,14 +642,12 @@
 
         // 각 스텝 전환 및 필수 유효성 검사 수행
         function goToStep(stepNum) {
-            // STEP 1에서 2로 갈 때: 부위 지정 필수
             if (stepNum === 2 && appState.currentStep === 1) {
                 if (!appState.bodyPart) {
                     triggerToast("불편함이 시작된 부위를 터치하여 우선 한 곳 선택해 주세요.", "warning");
                     return;
                 }
             }
-            // STEP 2에서 3으로 갈 때: 느낌 및 배경 상황 필수
             if (stepNum === 3 && appState.currentStep === 2) {
                 if (!appState.painType) {
                     triggerToast("느껴지는 구체적인 고통 형태를 한 가지 지정해 주세요.", "warning");
@@ -409,15 +659,12 @@
                 }
             }
 
-            // 모든 스텝 영역 가리기
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.add('hidden');
 
-            // 해당하는 영역 열기
             document.getElementById(`step${stepNum}`).classList.remove('hidden');
 
-            // 진행 프로그레스 바 너비 갱신
             const progressWidth = stepNum === 1 ? '33.33%' : (stepNum === 2 ? '66.66%' : '100%');
             document.getElementById('progressBar').style.width = progressWidth;
 
@@ -427,6 +674,17 @@
 
         // 자가 보고 처방 가이드 최종 생성 로직
         function generatePrescription() {
+            // 위치 수동 선택 유효성 간이 검증
+            if (appState.hospitalRecommend && appState.locationMethod === 'manual') {
+                const sido = document.getElementById('sidoSelect').value;
+                if (!sido) {
+                    triggerToast("실제 병원 추천을 받기 위해 시/도를 선택해 주세요.", "warning");
+                    return;
+                }
+                appState.selectedSido = sido;
+                appState.selectedSigungu = document.getElementById('sigunguSelect').value;
+            }
+
             // 체크된 동반 증상들 수집
             const checkedArray = [];
             document.querySelectorAll('.extra-symptom-chk:checked').forEach(chk => {
@@ -465,10 +723,12 @@
             let usage = "";
             let dept = "";
             let warning = "";
+            let deptKeyword = ""; // 네이버/카카오 지도 검색에 사용할 핵심 키워드
 
             // 1. 머리 및 얼굴부 분석 세분화
             if (appState.bodyPart === 'head') {
                 dept = "신경과 혹은 이비인후과";
+                deptKeyword = "신경과";
                 if (appState.painType === 'sharp' || appState.painType === 'throbbing') {
                     opinion = "뇌혈관 긴장 혹은 편두통성 급성 증강 단계가 의심됩니다. 스트레스나 카페인 불균형에 의해 유발될 확률이 큽니다.";
                     drug = "아세트아미노펜 (Acetaminophen) 또는 덱시부프로펜 (Dexibuprofen)";
@@ -482,11 +742,13 @@
             }
             // 2. 가슴 및 호흡기부 분석 세분화
             else if (appState.bodyPart === 'chest') {
+                deptKeyword = "이비인후과";
                 if (appState.painType === 'squeezing') {
                     opinion = "심장 관상동맥 일시 허혈 및 심근 부하, 혹은 신경계 과호흡 상태일 가능성을 배제할 수 없습니다. 즉각 활동을 정지하고 안정을 정립해야 합니다.";
                     drug = "복용 유보 (안정 수칙 우선 적용)";
                     usage = "임의의 진통소염제 화학 성분 복용을 삼가고 즉각 눕거나 조여진 옷을 푼 채 산소 환기가 잘 되는 곳에서 깊은 숨을 쉬며 주변 조력을 청해야 합니다.";
                     dept = "순환기내과 또는 응급의학과";
+                    deptKeyword = "순환기내과";
                     warning = "죄어드는 듯한 통증이 10분 이상 지체되며 목, 턱, 왼쪽 어깨 방향으로 뻗치는 방사통이 생기면 관상동맥 폐색(심근경색) 신호일 수 있으므로 구급차를 수배하십시오.";
                 } else {
                     opinion = "상기도 후두 점막 바이러스 감염(목감기) 혹은 외부 항원에 따른 세기관지 소성 염증 유발기가 의심됩니다.";
@@ -499,6 +761,7 @@
             // 3. 배 및 소화기관 분석 세분화
             else if (appState.bodyPart === 'stomach') {
                 dept = "소화기내과 또는 가정의학과";
+                deptKeyword = "내과";
                 if (appState.situation === 'food') {
                     opinion = "이상 음식 섭취 혹은 신경성 스트레스로 인해 위장관 유효 운동력이 급격히 저하되어 삼투막 기능이 교란된 일시적 소화장애/체증으로 보입니다.";
                     drug = "소화 효소제(디아스타제) 복합 제제 및 트리메부틴 말레산염 (위장관 운동 조절제)";
@@ -513,6 +776,7 @@
             // 4. 관절 및 골격계 분석 세분화
             else if (appState.bodyPart === 'limb') {
                 dept = "정형외과, 마취통증의학과 또는 재활의학과";
+                deptKeyword = "정형외과";
                 if (appState.situation === 'trauma') {
                     opinion = "외상 타격에 의해 인대 결합 조직이 과신장된 가벼운 무릎/발목 염좌이거나 내부 모세혈관 삼출물 누적으로 유도된 부종 반응입니다.";
                     drug = "나프록센 (Naproxen - 강력한 소염진통제) 및 얼음 냉찜질";
@@ -527,6 +791,7 @@
             // 5. 피부 부위 분석 세분화
             else if (appState.bodyPart === 'skin') {
                 dept = "피부과";
+                deptKeyword = "피부과";
                 if (appState.painType === 'itchy') {
                     opinion = "외부 접촉 및 음식물 알레르기로 유도된 화학 물질 '히스타민' 발흥에 따른 피부 진피층의 혈관 확장 단계입니다.";
                     drug = "세티리진 염산염 (Cetirizine - 2세대 항히스타민제)";
@@ -541,6 +806,7 @@
             // 6. 전신성 몸살기 영역 분석
             else {
                 dept = "내과 또는 가정의학과";
+                deptKeyword = "내과";
                 opinion = "인플루엔자 등 병원성 침입체 방어에 돌입한 생체 면역 백혈구 활동기로 인한 발열 및 면역 염증 유증상입니다.";
                 drug = "아세트아미노펜 단일제 또는 이부프로펜 액상 연질캡슐제";
                 usage = "몸살로 인한 면역 피로를 덜기 위해 이불을 겹쳐 쓰기보다 통풍이 잘되도록 체온을 서서히 다스리고, 4~6시간 간격으로 소량씩 복용을 가이드합니다.";
@@ -553,6 +819,78 @@
             document.getElementById('recommendedUsage').innerText = usage;
             document.getElementById('recommendedDept').innerText = dept;
             document.getElementById('criticalWarning').innerText = warning;
+
+            // === [실제 병원 추천 섹션 실시간 구축] ===
+            const recommendResultSection = document.getElementById('hospitalRecommendResult');
+            
+            if (appState.hospitalRecommend) {
+                recommendResultSection.classList.remove('hidden');
+                document.getElementById('targetDeptBadge').innerText = deptKeyword;
+                
+                let locationLabelText = "";
+                let searchQuery = "";
+                let hospitalCardsHtml = "";
+
+                if (appState.locationMethod === 'gps' && appState.gpsCoords) {
+                    locationLabelText = `📍 연동방식: GPS 실시간 좌표 기반`;
+                    searchQuery = `내 주변 ${deptKeyword}`;
+                    
+                    // GPS일 경우 지근거리 탐색 안내와 함께 카카오/네이버 딥링크를 적극 유도
+                    hospitalCardsHtml = `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-start gap-3">
+                            <div class="text-blue-600 bg-blue-50 p-2.5 rounded-lg"><i class="fa-solid fa-map-location text-lg"></i></div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">실시간 인근 의원 우선 매핑</h4>
+                                <p class="text-xs text-gray-500 mt-1 leading-relaxed">아래 포털 지도로 보기 버튼을 누르시면, 승인된 브라우저의 위경도를 토대로 실제 진료를 보는 가장 가까운 전문 <strong>${deptKeyword}</strong> 의원들이 정렬됩니다.</p>
+                            </div>
+                        </div>
+                    `;
+                } else if (appState.locationMethod === 'manual' && appState.selectedSido) {
+                    const sido = appState.selectedSido;
+                    const sigungu = appState.selectedSigungu || "";
+                    locationLabelText = `📍 연동지역: ${sido} ${sigungu}`;
+                    searchQuery = `${sido} ${sigungu} ${deptKeyword}`;
+
+                    // 선택된 도의 실제 대학 거점 병원들을 검색해서 출력
+                    const matchedHospitals = regionalHospitals[sido] || [];
+                    if (matchedHospitals.length > 0) {
+                        matchedHospitals.forEach(h => {
+                            hospitalCardsHtml += `
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-400 transition-all">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>${h.name}
+                                        </h4>
+                                        <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded">3차 거점</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1.5"><i class="fa-solid fa-map-pin mr-1 text-slate-400"></i> ${h.addr}</p>
+                                    <div class="mt-2.5 flex justify-between items-center pt-2.5 border-t border-slate-100">
+                                        <a href="tel:${h.tel}" class="text-xs font-bold text-blue-600 flex items-center gap-1"><i class="fa-solid fa-phone"></i> ${h.tel}</a>
+                                        <a href="https://map.naver.com/v5/search/${encodeURIComponent(h.name)}" target="_blank" class="text-[11px] font-bold text-slate-500 hover:text-slate-800">지도로 확인 <i class="fa-solid fa-chevron-right text-[9px]"></i></a>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        hospitalCardsHtml = `<p class="text-xs text-gray-400 text-center py-4">해당 도 지역의 거점 종합병원 정보를 제공하지 못했습니다. 아래 지도 검색을 시도해 주세요.</p>`;
+                    }
+                } else {
+                    // 수동인데 시도마저 누락된 최악의 케이스 우회
+                    locationLabelText = "📍 기본 광역 검색";
+                    searchQuery = `인근 ${deptKeyword}`;
+                }
+
+                document.getElementById('appliedLocationLabel').innerText = locationLabelText;
+                document.getElementById('hospitalCardsContainer').innerHTML = hospitalCardsHtml;
+
+                // 네이버/카카오 지도 쿼리 링크 생성
+                const naverUrl = `https://map.naver.com/v5/search/${encodeURIComponent(searchQuery)}`;
+                const kakaoUrl = `https://map.kakao.com/?q=${encodeURIComponent(searchQuery)}`;
+                document.getElementById('naverMapLink').setAttribute('href', naverUrl);
+                document.getElementById('kakaoMapLink').setAttribute('href', kakaoUrl);
+            } else {
+                recommendResultSection.classList.add('hidden');
+            }
 
             // 가상 발급 시각 기록
             const now = new Date();
@@ -577,9 +915,16 @@
             appState.situation = null;
             appState.extraSymptoms = [];
             appState.detailText = "";
+            appState.hospitalRecommend = false;
+            appState.locationMethod = 'gps';
+            appState.selectedSido = '';
+            appState.selectedSigungu = '';
 
             // UI 제어 초기화
             document.getElementById('detailText').value = "";
+            document.getElementById('enableHospitalRecommend').checked = false;
+            document.getElementById('locationSelectionPanel').classList.add('hidden');
+
             document.querySelectorAll('.extra-symptom-chk').forEach(chk => {
                 chk.checked = false;
                 const label = chk.closest('label');
@@ -639,12 +984,10 @@
 
             dock.appendChild(toast);
 
-            // 렌더링 지연 후 미끄러지듯 서서히 부풀어 오르는 효과 적용
             setTimeout(() => {
                 toast.classList.remove('translate-y-3', 'opacity-0');
             }, 30);
 
-            // 지속 시간이 지난 뒤 깔끔하게 사라지는 모션 구현
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => toast.remove(), 300);
